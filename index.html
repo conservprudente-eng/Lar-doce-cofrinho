@@ -17,10 +17,10 @@ body{margin:0;min-height:100vh;background:linear-gradient(#fffaf0,#fff5e0);font:
 header{background:linear-gradient(#fff3cf,#fde6a8);padding-top:env(safe-area-inset-top)}
 .hero{position:relative;max-width:440px;height:190px;margin:auto;overflow:hidden}
 .art{position:absolute;inset:0;width:100%;height:100%}
-.txt{position:absolute;left:41%;right:10px;top:20px}
+.txt{position:absolute;left:max(182px,47%);right:10px;top:18px}
 .brand{font-weight:900;font-size:31px;line-height:1;color:var(--navy)}
 .brand span{display:block;font-family:Caveat,"Segoe Script","Brush Script MT",cursive;font-style:italic;font-weight:700;font-size:46px;line-height:.95;color:#f26a1b;margin-top:2px}
-.txt p{margin:6px 0 0;font-size:12.5px;line-height:1.3;color:var(--navy);opacity:.85;font-weight:700}
+.txt p{margin:6px 0 0;font-size:12.5px;line-height:1.3;color:var(--navy);opacity:.85;font-weight:700;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .hand{font-family:Caveat,"Segoe Script",cursive;font-size:19px;line-height:1;color:var(--navy);margin-top:5px}
 .coin{animation:drop 2.4s ease-in-out infinite}
 @keyframes drop{0%{transform:translateY(0);opacity:0}20%{opacity:1}78%{transform:translateY(26px);opacity:1}100%{transform:translateY(31px);opacity:0}}
@@ -57,6 +57,7 @@ input:focus,select:focus{outline:none;border-color:#27b17a;box-shadow:0 0 0 3px 
 .m.c1,.m.c4{background:#d6f4e4;color:#2a7a52}.m.c1 strong,.m.c4 strong{color:#14532d}
 .m.c2,.m.c3{background:#ffdfe9;color:#c2255c}.m.c2 strong,.m.c3 strong{color:#c2255c}
 .m.c5{background:#fff0b8;color:#8a5a00}.m.c5 strong{color:#7a4f00}
+.m:not(.big) small.sub{font-size:12px;font-weight:600;opacity:.8}.m.big small.sub{font-size:12px}
 .neg{color:var(--red)!important}
 .note{font-size:13px;color:var(--muted);margin:8px 0 0}
 .item{border:1px solid var(--line);padding:14px;border-radius:16px;margin-top:10px;background:#fffdf7}
@@ -96,7 +97,7 @@ input:focus,select:focus{outline:none;border-color:#27b17a;box-shadow:0 0 0 3px 
 <path d="M128 119q6-8 13 0" fill="none" stroke="#5a2a3a" stroke-width="3" stroke-linecap="round"/><circle cx="133" cy="136" r="7" fill="#ff6f93" opacity=".45"/>
 <g class="coin"><circle cx="112" cy="62" r="12" fill="#ffd23f" stroke="#e0a000" stroke-width="2"/><text x="112" y="67" text-anchor="middle" font-size="14" font-weight="900" fill="#b97800" font-family="system-ui,sans-serif">$</text></g>
 </svg>
-<div class="txt"><div class="brand">Lar Doce<span>Cofrinho</span></div><p id="sub">Gastos, cofrinho, reserva e planos da família</p><div class="hand">Juntos por um futuro melhor! ♡</div></div>
+<div class="txt"><div class="brand">Lar Doce<span>Cofrinho</span></div><p id="sub">Gastos, cofrinho, reserva e planos</p><div class="hand">Juntos por um futuro melhor! ♡</div></div>
 </div></header>
 <main>
 <nav id="nav"><button class="on" data-t="inicio">🏠 Início</button><button data-t="gastos">🧾 Gastos</button><button data-t="cofre">🐷 Cofrinho</button><button data-t="reserva">🛟 Reserva</button><button data-t="planos">✈️ Planos</button></nav>
@@ -174,6 +175,7 @@ const monBar=()=>`<button class="btn s sm" onclick="shift(-1)">‹</button><b>${
 
 /* ---- cálculos ---- */
 const fixTotal=()=>sum(S.fixed,f=>+f.value||0);
+const fixPaid=()=>sum(S.fixed.filter(f=>f.paid[S.month]),f=>+f.value||0);
 const monthExp=()=>S.exp.filter(e=>e.date.slice(0,7)==S.month);
 const dayTotal=()=>sum(monthExp(),e=>e.value);
 const resBase=()=>S.reserve.base>0?S.reserve.base:fixTotal();
@@ -206,20 +208,20 @@ function monthsLeft(d){if(!d)return 0;const[a,b]=d.split("-").map(Number),n=new 
 
 /* ---- renderização ---- */
 function render(){
- const fx=fixTotal(),dia=dayTotal(),sobra=S.income-fx-dia,pg=bal(S.piggy),rs=bal(S.reserve.moves),pl=sum(S.plans,p=>p.saved);
+ const fx=fixTotal(),fp=fixPaid(),dia=dayTotal(),sobra=S.income-fp-dia,pg=bal(S.piggy),rs=bal(S.reserve.moves),pl=sum(S.plans,p=>p.saved);
  $("mon1").innerHTML=$("mon2").innerHTML=monBar();
- $("income").value=S.income||"";$("fam").value=S.family||"";$("sub").textContent=famTitle()||"Gastos, cofrinho, reserva e planos da família";document.title=famTitle()?"Lar Doce Cofrinho • "+famTitle():"Lar Doce Cofrinho";
+ $("income").value=S.income||"";$("fam").value=S.family||"";$("sub").textContent=famTitle()||"Gastos, cofrinho, reserva e planos";document.title=famTitle()?"Lar Doce Cofrinho • "+famTitle():"Lar Doce Cofrinho";
  $("sum").innerHTML=`<div class="m big"><i class="ic">💰</i><div><small>Sobra do mês</small><strong class="${sobra<0?"neg":""}">${money(sobra)}</strong></div></div>
-  <div class="m c1"><i class="ic">👛</i><div><small>Gastos fixos</small><strong>${money(fx)}</strong></div></div><div class="m c2"><i class="ic">🗓️</i><div><small>Dia a dia</small><strong>${money(dia)}</strong></div></div>`;
- const gasto=fx+dia;$("spBar").style.width=pct(gasto,S.income)+"%";$("spBar").style.background=gasto>S.income?"var(--red)":"var(--ok)";
- $("spNote").textContent=S.income>0?`Você gastou ${Math.round(gasto/S.income*100)}% da renda neste mês.`:"Informe a renda para ver quanto já foi gasto.";
+  <div class="m c1"><i class="ic">👛</i><div><small>Fixos pagos</small><strong>${money(fp)}</strong><small class="sub">de ${money(fx)} previstos</small></div></div><div class="m c2"><i class="ic">🗓️</i><div><small>Dia a dia</small><strong>${money(dia)}</strong></div></div>`;
+ const gasto=fp+dia;$("spBar").style.width=pct(gasto,S.income)+"%";$("spBar").style.background=gasto>S.income?"var(--red)":"var(--ok)";
+ $("spNote").textContent=S.income>0?`Você gastou ${Math.round(gasto/S.income*100)}% da renda neste mês (fixos pagos + dia a dia).`:"Informe a renda para ver quanto já foi gasto.";
  $("saved").innerHTML=`<div class="m c3"><i class="ic">🐷</i><div><small>Cofrinho</small><strong>${money(pg)}</strong></div></div><div class="m c4"><i class="ic">🛟</i><div><small>Reserva</small><strong>${money(rs)}</strong></div></div><div class="m c5 full"><i class="ic">✈️</i><div><small>Planos futuros</small><strong>${money(pl)}</strong></div></div>`;
  // gastos
  $("fixList").innerHTML=S.fixed.map(f=>`<div class="item row"><div class="desc"><label>Descrição</label><input value="${esc(f.name)}" onchange="upF('${f.id}','name',this.value)"></div>
   <div><label>Valor mensal (R$)</label><input type="number" inputmode="decimal" min="0" step=".01" value="${f.value||""}" onchange="upF('${f.id}','value',Math.max(0,+this.value||0))"></div>
   <button class="btn d" onclick="delF('${f.id}')">Excluir</button>
   <label class="chk"><input type="checkbox" ${f.paid[S.month]?"checked":""} onchange="payF('${f.id}',this.checked)">Pago em ${mLabel(S.month)}</label></div>`).join("");
- const pago=sum(S.fixed.filter(f=>f.paid[S.month]),f=>+f.value||0);
+ const pago=fp;
  $("fixTot").textContent=`Total fixo: ${money(fx)} • Pago: ${money(pago)} • Falta pagar: ${money(fx-pago)}`;
  const ex=monthExp(),cats={};ex.forEach(e=>cats[e.cat]=(cats[e.cat]||0)+e.value);
  $("cats").innerHTML=ex.length?`<h3>Neste mês: ${money(dia)}</h3>`+Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([c,v])=>`<span class="chip">${esc(c)}: ${money(v)}</span>`).join(""):"";
@@ -243,8 +245,8 @@ function render(){
 }
 
 /* ---- WhatsApp e backup ---- */
-function wa(){const fx=fixTotal(),dia=dayTotal();
- const t=`${(famTitle()||"Casa").toUpperCase()} — RESUMO DE ${mLabel(S.month).toUpperCase()}\nRenda: ${money(S.income)}\nGastos fixos: ${money(fx)}\nGastos do dia a dia: ${money(dia)}\nSobra do mês: ${money(S.income-fx-dia)}\n\nCofrinho: ${money(bal(S.piggy))}\nReserva de emergência: ${money(bal(S.reserve.moves))} de ${money(resGoal())}\nPlanos futuros: ${money(sum(S.plans,p=>p.saved))}`;
+function wa(){const fx=fixPaid(),dia=dayTotal();
+ const t=`${(famTitle()||"Casa").toUpperCase()} — RESUMO DE ${mLabel(S.month).toUpperCase()}\nRenda: ${money(S.income)}\nGastos fixos pagos: ${money(fx)}\nGastos do dia a dia: ${money(dia)}\nSobra do mês: ${money(S.income-fx-dia)}\n\nCofrinho: ${money(bal(S.piggy))}\nReserva de emergência: ${money(bal(S.reserve.moves))} de ${money(resGoal())}\nPlanos futuros: ${money(sum(S.plans,p=>p.saved))}`;
  window.open("https://wa.me/?text="+encodeURIComponent(t),"_blank")}
 function exp_(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,2)],{type:"application/json"}));a.download="minha-casa-backup.json";a.click();URL.revokeObjectURL(a.href)}
 function imp(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();
